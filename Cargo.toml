@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+petgraph = "0.6.5"
+# TODO custom errors
+anyhow = "1.0.95"
