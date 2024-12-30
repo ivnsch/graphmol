@@ -1,7 +1,7 @@
-mod atom;
-mod atomic_data;
-mod bond;
-mod common_props;
-mod mol;
-mod periodic_table;
-mod query_bond;
+pub mod atom;
+pub mod atomic_data;
+pub mod bond;
+pub mod common_props;
+pub mod mol;
+pub mod periodic_table;
+pub mod query_bond;
