@@ -1,4 +1,10 @@
-use crate::{atomic_data::AtomicNumber, bond::BondType, mol::Mol, periodic_table::PeriodicTable};
+use crate::{
+    atomic_data::AtomicNumber,
+    bond::BondType,
+    common_props::{common_props, CommonPropsKey, CommonPropsValue},
+    mol::Mol,
+    periodic_table::PeriodicTable,
+};
 use anyhow::{anyhow, Result};
 
 enum HybridizationType {
@@ -194,7 +200,7 @@ impl Default for Atom {
             implicit_valence: 0,
             explicit_valence: 0,
             num_radical_electrons: 0,
-            chiral_tag: 0,
+            chiral_tag: ChiralType::ChiUnspecified,
             hybrid: 0,
             isotope: 0,
             index: 0,
@@ -227,6 +233,66 @@ impl Atom {
     // This method can be used to distinguish query atoms from standard atoms:
     pub fn has_query(&self) -> bool {
         false
+    }
+
+    pub fn invert_chirality(&mut self) -> Result<bool> {
+        match self.chiral_tag {
+            ChiralType::ChiTetrahedralCw => {
+                self.chiral_tag = ChiralType::ChiTetrahedralCcw;
+                return Ok(true);
+            }
+            ChiralType::ChiTetrahedralCcw => {
+                self.chiral_tag = ChiralType::ChiTetrahedralCw;
+                return Ok(true);
+            }
+            ChiralType::ChiTetrahedral => {
+                let mut common_props = common_props()?;
+                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
+                if let Some(CommonPropsValue::U32(perm)) = perm {
+                    match perm {
+                        1 => *perm = 2,
+                        2 => *perm = 1,
+                        _ => *perm = 0,
+                    }
+                    return Ok(*perm != 0);
+                } else {
+                    return Ok(false);
+                }
+            }
+            ChiralType::ChiTrigonalbipyramidal => {
+                let mut common_props = common_props()?;
+                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
+                if let Some(CommonPropsValue::U32(perm)) = perm {
+                    let perm_res = if *perm <= 20 {
+                        trigonalbipyramidal_invert()[*perm as usize]
+                    } else {
+                        0
+                    };
+                    *perm = perm_res as u32;
+                    return Ok(perm_res != 0);
+                } else {
+                    return Ok(false);
+                }
+            }
+            ChiralType::ChiOctahedral => {
+                let mut common_props = common_props()?;
+                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
+                if let Some(CommonPropsValue::U32(perm)) = perm {
+                    let perm_res = if *perm <= 30 {
+                        trigonalbipyramidal_invert()[*perm as usize]
+                    } else {
+                        0
+                    };
+                    *perm = perm_res as u32;
+                    return Ok(perm_res != 0);
+                } else {
+                    return Ok(false);
+                }
+            }
+            _ => {
+                return Ok(false);
+            }
+        }
     }
 }
 
