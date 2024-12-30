@@ -1,4 +1,11 @@
 use crate::atomic_data::{AtomicData, AtomicNumber};
+use once_cell::sync::OnceCell;
+
+static PERIODIC_TABLE: OnceCell<PeriodicTable> = OnceCell::new();
+
+pub fn periodic_table() -> &'static PeriodicTable {
+    PERIODIC_TABLE.get_or_init(|| PeriodicTable::new())
+}
 
 pub struct PeriodicTable {
     by_anum: Vec<AtomicData>,
@@ -6,7 +13,7 @@ pub struct PeriodicTable {
 
 impl PeriodicTable {
     // port: TODO singleton
-    pub fn new() -> PeriodicTable {
+    fn new() -> PeriodicTable {
         // port: TODO fill with data
         PeriodicTable { by_anum: vec![] }
     }

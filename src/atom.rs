@@ -3,7 +3,7 @@ use crate::{
     bond::BondType,
     common_props::{common_props, CommonPropsKey, CommonPropsValue},
     mol::Mol,
-    periodic_table::PeriodicTable,
+    periodic_table::{periodic_table, PeriodicTable},
 };
 use anyhow::{anyhow, Result};
 
@@ -142,7 +142,7 @@ impl AtomWithMol {
             // Non-H checks for absurd charge values:
             //   1. the formal charge is larger than the atomic number
             //   2. the formal charge moves us to a different row of the periodic table
-            let pd = PeriodicTable::new();
+            let pd = periodic_table();
 
             if self.atom.formal_charge as usize > self.atom.atomic_num.0
                 || pd.get_row(self.atom.atomic_num) != pd.get_row(effective_atomic_num)
@@ -218,7 +218,7 @@ impl Atom {
 
     fn get_mass(&self) -> f64 {
         // if self.iso
-        let pd = PeriodicTable::new();
+        let pd = periodic_table();
         if self.isotope != 0 {
             let mut res = pd.mass_for_isotope(self.atomic_num, self.isotope);
             if self.atomic_num.0 != 0 && res == 0.0 {
@@ -336,7 +336,7 @@ fn calc_implicit_valence(atom: &AtomWithMol, strict: bool, check_it: bool) -> Re
 
     let mut explicit_plus_rad_v = atom.atom.explicit_valence + atom.atom.num_radical_electrons;
 
-    let periodic_table = PeriodicTable::new();
+    let periodic_table = periodic_table();
     let ovalens = periodic_table.valence_list(atom.atom.atomic_num);
 
     // if we start with an atom that doesn't have specified valences, we stick
@@ -465,7 +465,7 @@ fn calc_explicit_valence(atom: &AtomWithMol, strict: bool, check_it: bool) -> Re
     }
     accum += atom.atom.num_explicit_hs as f64;
 
-    let periodic_table = PeriodicTable::new();
+    let periodic_table = periodic_table();
     let ovalens = periodic_table.valence_list(atom.atom.atomic_num);
 
     // if we start with an atom that doesn't have specified valences, we stick
