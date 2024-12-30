@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use crate::{
     atomic_data::AtomicNumber,
     bond::BondType,
-    common_props::{common_props, CommonPropsKey, CommonPropsValue},
+    common_props::{PropsKey, PropsValue},
     mol::Mol,
     periodic_table::{periodic_table, PeriodicTable},
 };
@@ -178,6 +180,7 @@ pub struct Atom {
     pub hybrid: u8,
     pub isotope: u32,
     pub index: usize,
+    pub props: HashMap<PropsKey, PropsValue>,
 }
 
 /// Molecule associated with an atom and related data
@@ -204,6 +207,7 @@ impl Default for Atom {
             hybrid: 0,
             isotope: 0,
             index: 0,
+            props: HashMap::new(),
         }
     }
 }
@@ -246,9 +250,8 @@ impl Atom {
                 return Ok(true);
             }
             ChiralType::ChiTetrahedral => {
-                let mut common_props = common_props()?;
-                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
-                if let Some(CommonPropsValue::U32(perm)) = perm {
+                let perm = self.props.get_mut(&PropsKey::ChiralPermutation);
+                if let Some(PropsValue::U32(perm)) = perm {
                     match perm {
                         1 => *perm = 2,
                         2 => *perm = 1,
@@ -260,9 +263,8 @@ impl Atom {
                 }
             }
             ChiralType::ChiTrigonalbipyramidal => {
-                let mut common_props = common_props()?;
-                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
-                if let Some(CommonPropsValue::U32(perm)) = perm {
+                let perm = self.props.get_mut(&PropsKey::ChiralPermutation);
+                if let Some(PropsValue::U32(perm)) = perm {
                     let perm_res = if *perm <= 20 {
                         trigonalbipyramidal_invert()[*perm as usize]
                     } else {
@@ -275,9 +277,8 @@ impl Atom {
                 }
             }
             ChiralType::ChiOctahedral => {
-                let mut common_props = common_props()?;
-                let perm = common_props.get_mut(&CommonPropsKey::ChiralPermutation);
-                if let Some(CommonPropsValue::U32(perm)) = perm {
+                let perm = self.props.get_mut(&PropsKey::ChiralPermutation);
+                if let Some(PropsValue::U32(perm)) = perm {
                     let perm_res = if *perm <= 30 {
                         trigonalbipyramidal_invert()[*perm as usize]
                     } else {
